@@ -32,9 +32,25 @@ router.put('/:id/toggle', (req, res) => {
   });
 });
 
+router.put('/:id/reminder', (req, res) => {
+  const { id } = req.params;
+  const { reminder_time } = req.body;
+  if (!reminder_time) return res.status(400).json({ error: 'Reminder time is required' });
+
+  const now = new Date();
+  const reminderDate = new Date(reminder_time);
+  if (reminderDate < now) return res.status(400).json({ error: 'Reminder time cannot be in the past' });
+
+  db.query('UPDATE todos SET reminder_time = ? WHERE id = ?', [reminder_time, id], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Todo not found' });
+    res.json({ message: 'Reminder updated' });
+  });
+});
+
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
-  db.query('DELETE FROM todos WHERE id = ?', [id], (err, result) => {
+  db.query('UPDATE todos SET deleted = 1 WHERE id = ?', [id], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Todo not found' });
     res.json({ message: 'Todo marked as deleted' });
