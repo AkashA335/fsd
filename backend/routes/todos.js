@@ -11,10 +11,10 @@ router.get('/', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { task } = req.body;
+  const { task, reminder_time } = req.body;
   if (!task) return res.status(400).json({ error: 'Task is required' });
 
-  db.query('INSERT INTO todos (task) VALUES (?)', [task], (err, result) => {
+  db.query('INSERT INTO todos (task, reminder_time) VALUES (?, ?)', [task, reminder_time || null], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     db.query('SELECT * FROM todos WHERE id = ?', [result.insertId], (err2, rows) => {
       if (err2) return res.status(500).json({ error: err2.message });
